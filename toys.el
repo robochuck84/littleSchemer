@@ -29,9 +29,11 @@
 
 (defun remember (a lat)
   (cond
-   ((null lat) (quote ()))
+   ((null lat)  '())
    ((= (car lat) a) (cdr lat))
    (default (cons (car lat) (remember a (cdr lat))))))
 
 
 (remember a '(b a c))
+
+

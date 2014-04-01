@@ -2,6 +2,13 @@
   (lambda (a)
     (and (not (pair? a)) (not (null? a)))))
 
+(define member?
+  (lambda (a lat)
+    (cond
+     ((null? lat) #f)
+     (else
+      (or (eq? (car lat) a) (member? a (cdr lat)))))))
+
 (define multirember
     (lambda (a lat)
         (cond
@@ -150,8 +157,67 @@
     (cond
      ((and (null? l1) (null? l2)) #t)
      ((or (null? l1) (null? l2)) #f)
-     ((and (atom? (car l1)) (atom? (car l2)))
-      (and (eq? (car l1) (car l2)) (eqlist? (cdr l1) (cdr l2))))
-     ((or (atom? (car l1)) (atom? (car l2))) #f)
      (else
-      (and (eqlist? (car l1) (car l2)) (eqlist? (cdr l1) (cdr l2)))))))
+      (and (equal? (car l1) (car l2)) (eqlist? (cdr l1) (cdr l2)))))))
+
+(define equal?
+  (lambda (s1 s2)
+    (cond
+     ((and (atom? s1) (atom? s2)) #t)
+     ((or (atom? s1) (atom? s2)) #f)
+     (else
+      (and (eqlist? s1 s2))))))
+
+(define numbered?
+  (lambda (aexp)
+    (cond
+     ((atom? aexp) (number? aexp))
+     (else
+      (and (numbered? (car aexp))
+	   (numbered? (car (cdr (cdr aexp)))))))))
+
+(define 1st-sub-sexp
+  (lambda (sexp)
+    (car (cdr sexp))))
+
+(define 2nd-sub-sexp
+  (lambda (sexp)
+    (car (cdr (cdr sexp)))))
+
+(define operator
+  (lambda (sexp)
+    (car sexp)))
+
+(define value
+  (lambda (nexp)
+    (cond
+     ((atom? nexp) nexp)
+     ((equal? (operator nexp) '(+))
+      (+ (value (1st-sub-sexp nexp)) (value (2nd-sub-sexp nexp))))
+     ((equal? (operator nexp) '(-))
+      (- (value (1st-sub-sexp nexp) (value (2nd-sub-sexp nexp)))))
+     (else
+      (pow (value (1st-sub-sexp nexp)) (value (2nd-sub-sexp nexp)))))))
+
+(define set?
+  (lambda (l)
+    (cond
+     ((null? l) #t)
+     ((member? (car l) (cdr l)) #f)
+     (else
+      (set? (cdr l))))))
+
+(define makeset
+  (lambda (l)
+    (cond
+     ((null? l) '())
+     ((member? (car l) (cdr l)) (makeset (cdr l)))
+     (else
+      (cons (car l) (makeset (cdr l)))))))
+
+(define subset?
+  (lambda (set1 set2)
+    (cond
+     ((null? set1) #t)
+     (else (and (member? (car set1) set2) (subset? (cdr set1) set2))))))
+

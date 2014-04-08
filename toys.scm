@@ -15,6 +15,13 @@
      (else
       (or (eq? (car lat) a) (member? a (cdr lat)))))))
 
+(define member?
+  (lambda (a lat)
+    (cond
+     ((null? lat) #f)
+     (else
+      (or (eq? (car lat) a) (member? a (cdr lat)))))))
+
 (define multirember
     (lambda (a lat)
         (cond
@@ -200,7 +207,7 @@
   (lambda (sexp)
     (car sexp)))
 
-<<<<<<< HEAD
+
 (define atom-to-function
   (lambda (x)
     (cond
@@ -208,25 +215,15 @@
      ((eq? x '-) -)
      (else  pow))))
 
-=======
->>>>>>> c058c0d... Friends and relations
+
 (define value
   (lambda (nexp)
     (cond
      ((atom? nexp) nexp)
-<<<<<<< HEAD
      (else
       ((atom-to-function (operator nexp)) 
        (value (1st-sub-sexp nexp))
        (value (2nd-sub-sexp nexp)))))))
-=======
-     ((equal? (operator nexp) '(+))
-      (+ (value (1st-sub-sexp nexp)) (value (2nd-sub-sexp nexp))))
-     ((equal? (operator nexp) '(-))
-      (- (value (1st-sub-sexp nexp) (value (2nd-sub-sexp nexp)))))
-     (else
-      (pow (value (1st-sub-sexp nexp)) (value (2nd-sub-sexp nexp)))))))
->>>>>>> c058c0d... Friends and relations
 
 (define set?
   (lambda (l)
@@ -250,7 +247,7 @@
      ((null? set1) #t)
      (else (and (member? (car set1) set2) (subset? (cdr set1) set2))))))
 
-<<<<<<< HEAD
+
 (define eqset?
   (lambda (set1 set2)
     (and (subset? set1 set2) (subset? set2 set1))))
@@ -337,4 +334,5 @@
 (define even?
   (lambda (n)
     (= (* (% n 2) 2) n)))
+
 

@@ -1,7 +1,6 @@
 (define atom?
   (lambda (a)
     (and (not (pair? a)) (not (null? a)))))
-
 (define member?
   (lambda (a lat)
     (cond
@@ -37,6 +36,12 @@
         (cond
             ((zero? n) m)
             (else (add (sub1 n) (add1 m))))))
+
+(define *
+  (lambda (n m)
+    (cond
+     ((zero? m) 0)
+     (else (add n (* n (sub1 m)))))))
             
 (define tup+
     (lambda (tup1 tup2)
@@ -81,7 +86,7 @@
      ((zero? m) n)
      (else (sub1 (sub n (sub1 m)))))))
 
-(define divide
+(define %
   (lambda (n m)
     (cond
      ((lt n m) 0)
@@ -188,16 +193,21 @@
   (lambda (sexp)
     (car sexp)))
 
+(define atom-to-function
+  (lambda (x)
+    (cond
+     ((eq? x '+) +)
+     ((eq? x '-) -)
+     (else  pow))))
+
 (define value
   (lambda (nexp)
     (cond
      ((atom? nexp) nexp)
-     ((equal? (operator nexp) '(+))
-      (+ (value (1st-sub-sexp nexp)) (value (2nd-sub-sexp nexp))))
-     ((equal? (operator nexp) '(-))
-      (- (value (1st-sub-sexp nexp) (value (2nd-sub-sexp nexp)))))
      (else
-      (pow (value (1st-sub-sexp nexp)) (value (2nd-sub-sexp nexp)))))))
+      ((atom-to-function (operator nexp)) 
+       (value (1st-sub-sexp nexp))
+       (value (2nd-sub-sexp nexp)))))))
 
 (define set?
   (lambda (l)
@@ -221,3 +231,89 @@
      ((null? set1) #t)
      (else (and (member? (car set1) set2) (subset? (cdr set1) set2))))))
 
+(define eqset?
+  (lambda (set1 set2)
+    (and (subset? set1 set2) (subset? set2 set1))))
+
+(define intersect?
+  (lambda (set1 set2)
+    (cond
+     ((null? set1) #f)
+     (else
+      (or (member? (car set1) set2) (intersect? (cdr set1) set2))))))
+
+(define intersect
+  (lambda (set1 set2)
+    (cond
+     ((null? set1) '())
+     ((member? (car set1) set2) (cons (car set1) (intersect (cdr set1) set2)))
+     (else
+      (intersect (cdr set1) set2)))))
+
+(define intersectall
+  (lambda (l)
+    (cond
+     ((null? (cdr l)) (car l))
+     (else
+      (intersect (car l) (intersectall (cdr l)))))))
+
+(define first
+  (lambda (pair)
+    (car pair)))
+
+(define second
+  (lambda (pair)
+    (car (cdr pair)))) 
+
+(define build
+  (lambda (a b)
+    (cons a (cons b (quote ())))))
+
+(define firsts
+  (lambda (l)
+    (cond
+     ((null? l) '())
+     (else
+      (cons (first (car l)) (firsts (cdr l)))))))
+
+(define fun?
+  (lambda (rel)
+    (set? (firsts rel))))
+
+(define remberf
+  (lambda (test?)
+    (lambda (a l)
+      (cond
+       ((null? l) (quote()))
+       ((test? (car l) a) (cdr l))
+       (else 
+	(cons (car l) ((remberf test?) a (cdr l))))))))
+
+(define eq?-c
+  (lambda (a)
+    (lambda (x)
+      (eq? a x))))
+
+
+(define multirember&co
+  (lambda (a lat col)
+    (cond
+     ((null? lat)
+      (col (quote()) (quote ())))
+     ((eq? (car lat) a)
+      (multirember&co a
+		      (cdr lat)
+		      (lambda (newlat seen)
+			(col newlat (cons (car lat) seen)))))
+     (else
+      (multirember&co a (cdr lat)
+		      (lambda (newlat seen)
+			(col (cons (cdr lat) newlat) seen))))))
+
+(define a-friend
+  (lambda (x y)
+    (null? y)))
+
+(define even?
+  (lambda (n)
+    (= (* (% n 2) 2) n)))

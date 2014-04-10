@@ -312,7 +312,13 @@
     (lambda (x)
       (eq? a x))))
 
-
+; Removes the given atom a from the list l
+; col is a collector and we will call the collector
+; once we have gone through the entire list and removed the
+; occurances of a, ues this with last-friend and it will
+; tell you the length of that newly minted list
+;
+; The identiy of col would be to simply return the new list
 (define multirember&co
   (lambda (a lat col)
     (cond
@@ -330,20 +336,25 @@
 		      (lambda (newlat seen)
 			(col (cons (car lat) newlat)
 			     seen)))))))
-
+			     
+; First simple collector function
+; asks the question, is the second argument null?
 (define a-friend
   (lambda (x y)
     (null? y)))
 
+; Missleading, collector function that asks the length of the first argument
+; when used with member*&co it will tell you the number of items after the remove
 (define last-friend
   (lambda (x y)
     (length x)))
+
 
 (define even?
   (lambda (n)
     (= (* (% n 2) 2) n)))
 
-
+; Removes any non even items from the list
 (define evens-only*
   (lambda (l)
     (cond
@@ -372,7 +383,7 @@
       (else
        (evens-only*&co (cdr l)
 		       (lambda (newl p s)
-			 (col (cons (car l) newl)
+			 (col newl
 			      p (+ (car l) s)))))))
     (else
      (evens-only*&co (car l) 

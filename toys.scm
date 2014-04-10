@@ -1,6 +1,7 @@
 (define atom?
   (lambda (a)
     (and (not (pair? a)) (not (null? a)))))
+
 (define member?
   (lambda (a lat)
     (cond
@@ -104,7 +105,7 @@
   (lambda (n m)
     (cond
      ((lt n m) 0)
-     (else (add1 (divide (sub n m) m))))))
+     (else (add1 (% (sub n m) m))))))
 
 (define length
   (lambda (lat)
@@ -316,23 +317,79 @@
   (lambda (a lat col)
     (cond
      ((null? lat)
-      (col (quote()) (quote ())))
+      (col (quote ()) (quote ())))
      ((eq? (car lat) a)
       (multirember&co a
 		      (cdr lat)
 		      (lambda (newlat seen)
-			(col newlat (cons (car lat) seen)))))
+			(col newlat
+			     (cons (car lat) seen)))))
      (else
-      (multirember&co a (cdr lat)
+      (multirember&co a
+		      (cdr lat)
 		      (lambda (newlat seen)
-			(col (cons (cdr lat) newlat) seen))))))
+			(col (cons (car lat) newlat)
+			     seen)))))))
 
 (define a-friend
   (lambda (x y)
     (null? y)))
 
+(define last-friend
+  (lambda (x y)
+    (length x)))
+
 (define even?
   (lambda (n)
     (= (* (% n 2) 2) n)))
+
+
+(define evens-only*
+  (lambda (l)
+    (cond
+     ((null? l) '())
+     ((atom? (car l))
+      (cond
+       ((even? (car l)) (cons (car l) (evens-only* (cdr l))))
+       (else (evens-only* (cdr l)))))
+     (else
+      (cons (evens-only* (car l)) (evens-only* (cdr l)))))))
+
+; Uses a collector to gather only the evens into a list while simultaneously
+; summing the odds and finding the product of the evens
+(define evens-only*&co
+  (lambda (l col)
+    (cond
+    ((null? l)
+     (col (quote ()) 1 0))
+    ((atom? (car l))
+     (cond
+      ((even? (car l))
+       (evens-only*&co (cdr l)
+		       (lambda (newl p s)
+			 (col (cons (car l) newl)
+			      (* (car l) p) s))))
+      (else
+       (evens-only*&co (cdr l)
+		       (lambda (newl p s)
+			 (col (cons (car l) newl)
+			      p (+ (car l) s)))))))
+    (else
+     (evens-only*&co (car l) 
+		     (lambda (newl1 p1 s1)
+		       (evens-only*&co (cdr l) 
+				       (lambda (newl2 p2 s2)
+					 (col (cons newl1 newl2)
+					      (* p1 p2)
+					      (+ s1 s2))))))))))
+
+(define the-last-friend
+  (lambda (newl product sum)
+    (cons sum (cons product newl))))
+
+
+
+
+
 
 
